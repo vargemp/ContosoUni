@@ -1,12 +1,9 @@
 ﻿@page "{id:int?}"
 @model ContosoUniversity.Pages.Instructors.IndexModel
-
 @{
     ViewData["Title"] = "Instructors";
 }
-
 <h2>Instructors</h2>
-
 <p>
     <a asp-page="Create">Create New</a>
 </p>
@@ -25,7 +22,7 @@
         @foreach (var item in Model.Instructor.Instructors)
         {
             string selectedRow = "";
-            if (item.ID == Model.InstructorID)
+            if (item.ID == (int?)ViewData["InstructorID"])
             {
                 selectedRow = "success";
             }
@@ -63,7 +60,6 @@
         }
     </tbody>
 </table>
-
 @if (Model.Instructor.Courses != null)
 {
     <h3>Courses Taught by Selected Instructor</h3>
@@ -74,18 +70,16 @@
             <th>Title</th>
             <th>Department</th>
         </tr>
-
         @foreach (var item in Model.Instructor.Courses)
         {
             string selectedRow = "";
-            if (item.CourseID == Model.CourseID)
+            if (item.CourseID == (int?)ViewData["CourseID"])
             {
                 selectedRow = "success";
             }
             <tr class="@selectedRow">
                 <td>
-                    @Html.ActionLink("Select", "OnGetAsync",
-                                  new { courseID = item.CourseID })
+                    @Html.ActionLink("Select", "OnGetAsync", new { courseID = item.CourseID })
                 </td>
                 <td>
                     @item.CourseID
@@ -98,30 +92,28 @@
                 </td>
             </tr>
         }
-
     </table>
-
-    @if (Model.Instructor.Enrollments != null)
-    {
-        <h3>
-            Students Enrolled in Selected Course
-        </h3>
-        <table class="table">
+}
+@if (Model.Instructor.Enrollments != null)
+{
+    <h3>
+        Students Enrolled in Selected Course
+    </h3>
+    <table class="table">
+        <tr>
+            <th>Name</th>
+            <th>Grade</th>
+        </tr>
+        @foreach (var item in Model.Instructor.Enrollments)
+        {
             <tr>
-                <th>Name</th>
-                <th>Grade</th>
+                <td>
+                    @item.Student.FullName
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Grade)
+                </td>
             </tr>
-            @foreach (var item in Model.Instructor.Enrollments)
-            {
-                <tr>
-                    <td>
-                        @item.Student.FullName
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Grade)
-                    </td>
-                </tr>
-            }
-        </table>
-    }
+        }
+    </table>
 }

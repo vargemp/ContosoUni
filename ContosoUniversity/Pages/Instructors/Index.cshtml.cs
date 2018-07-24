@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ContosoUniversity.Models.SchoolViewModels;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿//#define Explicit
+
+using ContosoUniversity.Models;
+using ContosoUniversity.Models.SchoolViewModels;  // Add VM
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using ContosoUniversity.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ContosoUniversity.Pages.Instructors
 {
@@ -20,9 +19,8 @@ namespace ContosoUniversity.Pages.Instructors
         }
 
         public InstructorIndexData Instructor { get; set; }
-        public int InstructorID { get; set; }
-        public int CourseID { get; set; }
 
+#if Explicit
         public async Task OnGetAsync(int? id, int? courseID)
         {
             Instructor = new InstructorIndexData();
@@ -32,24 +30,25 @@ namespace ContosoUniversity.Pages.Instructors
                     .ThenInclude(i => i.Course)
                         .ThenInclude(i => i.Department)
                   //.Include(i => i.CourseAssignments)
-                  //  .ThenInclude(i => i.Course)
-                  //      .ThenInclude(i => i.Enrollments)
-                  //          .ThenInclude(i => i.Student)
-                  //.AsNoTracking()
+                  //    .ThenInclude(i => i.Course)
+                  //        .ThenInclude(i => i.Enrollments)
+                  //            .ThenInclude(i => i.Student)
+                  // .AsNoTracking()
                   .OrderBy(i => i.LastName)
                   .ToListAsync();
 
+
             if (id != null)
             {
-                InstructorID = id.Value;
-                Instructor instructor = Instructor.Instructors.Single(
-                    i => i.ID == id.Value);
+                ViewData["InstructorID"] = id.Value;
+                Instructor instructor = Instructor.Instructors.Where(
+                    i => i.ID == id.Value).Single();
                 Instructor.Courses = instructor.CourseAssignments.Select(s => s.Course);
             }
 
             if (courseID != null)
             {
-                CourseID = courseID.Value;
+                ViewData["CourseID"] = courseID.Value;
                 var selectedCourse = Instructor.Courses.Where(x => x.CourseID == courseID).Single();
                 await _context.Entry(selectedCourse).Collection(x => x.Enrollments).LoadAsync();
                 foreach (Enrollment enrollment in selectedCourse.Enrollments)
@@ -59,5 +58,38 @@ namespace ContosoUniversity.Pages.Instructors
                 Instructor.Enrollments = selectedCourse.Enrollments;
             }
         }
+#else
+        public async Task OnGetAsync(int? id, int? courseID)
+        {
+            Instructor = new InstructorIndexData();
+            Instructor.Instructors = await _context.Instructors
+               .Include(i => i.OfficeAssignment)
+               .Include(i => i.CourseAssignments)
+                 .ThenInclude(i => i.Course)
+                     .ThenInclude(i => i.Department)
+                 .Include(i => i.CourseAssignments)
+                     .ThenInclude(i => i.Course)
+                         .ThenInclude(i => i.Enrollments)
+                             .ThenInclude(i => i.Student)
+               .AsNoTracking()
+               .OrderBy(i => i.LastName)
+               .ToListAsync();
+
+            if (id != null)
+            {
+                ViewData["InstructorID"] = id.Value;
+                Instructor instructor = Instructor.Instructors.Where(
+                    i => i.ID == id.Value).Single();
+                Instructor.Courses = instructor.CourseAssignments.Select(s => s.Course);
+            }
+
+            if (courseID != null)
+            {
+                ViewData["CourseID"] = courseID.Value;
+                Instructor.Enrollments = Instructor.Courses.Where(
+                    x => x.CourseID == courseID).Single().Enrollments;
+            }
+        }
+#endif
     }
 }

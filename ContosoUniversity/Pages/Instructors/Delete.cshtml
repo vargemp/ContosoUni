@@ -1,12 +1,9 @@
 ﻿@page
 @model ContosoUniversity.Pages.Instructors.DeleteModel
-
 @{
     ViewData["Title"] = "Delete";
 }
-
 <h2>Delete</h2>
-
 <h3>Are you sure you want to delete this?</h3>
 <div>
     <h4>Instructor</h4>
@@ -31,7 +28,7 @@
             @Html.DisplayFor(model => model.Instructor.HireDate)
         </dd>
     </dl>
-    
+
     <form method="post">
         <input type="hidden" asp-for="Instructor.ID" />
         <input type="submit" value="Delete" class="btn btn-default" /> |
